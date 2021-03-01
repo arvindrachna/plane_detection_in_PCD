@@ -1,5 +1,6 @@
 # plane_detection_in_PCD
 Normal clustering based plane detection in a 3D point cloud
+RGBD images are taken from publiclly available datasets
 
 Title
 An Efficient Clustering Algorithm to Simultaneously Detect Multiple Planes in a Point Cloud
