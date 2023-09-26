@@ -52,17 +52,27 @@ if __name__ == "__main__":
     
     #pcd = o3d.io.read_point_cloud("../../TestData/fragment.ply")
 
-    color_raw = read_image("C:/Users/DELL/Python37/Rachna/data/rgb_2.jpg")
-    depth_raw = read_image("C:/Users/DELL/Python37/Rachna/data/depth_2.png")
-    #color_raw = read_image("C:/Users/DELL/Python37/Open3D-master/examples/TestData/RGBD/other_formats/TUM_color.png")
-    #depth_raw = read_image("C:/Users/DELL/Python37/Open3D-master/examples/TestData/RGBD/other_formats/TUM_depth.png")
+    # color_raw = read_image("C:/Users/DELL/Python37/Rachna/data/rgb_2.jpg")
+    # depth_raw = read_image("C:/Users/DELL/Python37/Rachna/data/depth_2.png")
+    # #color_raw = read_image("C:/Users/DELL/Python37/Open3D-master/examples/TestData/RGBD/other_formats/TUM_color.png")
+    # #depth_raw = read_image("C:/Users/DELL/Python37/Open3D-master/examples/TestData/RGBD/other_formats/TUM_depth.png")
     
-    rgbd_image = o3d.create_rgbd_image_from_tum_format(color_raw, depth_raw);
+    # rgbd_image = o3d.create_rgbd_image_from_tum_format(color_raw, depth_raw);
     
    
-    pcd = o3d.create_point_cloud_from_rgbd_image(rgbd_image, o3d.PinholeCameraIntrinsic(
-            o3d.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
+    # pcd = o3d.create_point_cloud_from_rgbd_image(rgbd_image, o3d.PinholeCameraIntrinsic(
+    #         o3d.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
     #Flip it, otherwise the pointcloud will be upside down
+    
+    #load point cloud
+    filename="./Fig4g.xyz"
+    pcd_temp=np.loadtxt(filename 
+                #    ,delimiter=','
+                )
+    pcd=o3d.geometry.PointCloud()
+    pcd.points=o3d.utility.Vector3dVector(pcd_temp[:,:3]) ###这里直接拿边框就行了，少delta应该问题不大
+    pcd.paint_uniform_color(color=[0, 0, 1])
+
     pcd.transform([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
         
     #o3d.io.write_point_cloud("C:/Users/DELL/Python37/Rachna/rgb_3.pcd", pcd)
@@ -72,12 +82,17 @@ if __name__ == "__main__":
         exit()
     print(pcd)
     o3d.visualization.draw_geometries([pcd])
-    downpcd = o3d.geometry.voxel_down_sample(pcd, voxel_size=0.005)
-    cl, ind = o3d.geometry.statistical_outlier_removal(downpcd,nb_neighbors=20, std_ratio=2.0)
+    downpcd = pcd.voxel_down_sample(voxel_size=0.005)
+    # downpcd = o3d.geometry.voxel_down_sample(pcd, voxel_size=0.005)
+    cl, ind = downpcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
+    # cl, ind = o3d.geometry.statistical_outlier_removal(downpcd,nb_neighbors=20, std_ratio=2.0)
     
-    downpcd = o3d.geometry.select_down_sample(downpcd, ind)
-    o3d.geometry.estimate_normals(downpcd,search_param=o3d.geometry.KDTreeSearchParamHybrid(
+    downpcd = downpcd.select_by_index(ind)##这里好像是发生了一些变化了
+    # downpcd = o3d.geometry.select_down_sample(downpcd, ind)
+    downpcd.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(
         radius=0.1, max_nn=30))
+    # o3d.geometry.estimate_normals(downpcd,search_param=o3d.geometry.KDTreeSearchParamHybrid(
+    #     radius=0.1, max_nn=30))
     #o3d.visualization.draw_geometries([downpcd])
     
     #print(downpcd)
